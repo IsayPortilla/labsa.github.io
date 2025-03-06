@@ -3,14 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visor PDF</title>
+    <title>Visor PDF con PDF.js</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <style>
+        #pdf-viewer {
+            width: 100%;
+            height: 80vh;
+            border: 1px solid #ccc;
+            overflow: auto;
+        }
+        canvas {
+            width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
-    <iframe
-        src="Politicas.pdf"
-        width="100%"
-        height="600px"
-        style="border: none;">
-    </iframe>
+    <h1>Documento PDF</h1>
+    <div id="pdf-viewer"></div>
+
+    <script>
+        const pdfUrl = 'Politicas.pdf'; 
+        const container = document.getElementById('pdf-viewer');
+        pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+            const renderPage = (pageNum) => {
+                pdf.getPage(pageNum).then(page => {
+                    const scale = 1.5;
+                    const viewport = page.getViewport({ scale });
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    container.appendChild(canvas);
+                    page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    });
+                    if (pageNum < pdf.numPages) {
+                        renderPage(pageNum + 1);
+                    }
+                });
+            };
+            renderPage(1);
+        }).catch(error => {
+            console.error('Error al cargar el PDF:', error);
+        });
+    </script>
 </body>
 </html>
